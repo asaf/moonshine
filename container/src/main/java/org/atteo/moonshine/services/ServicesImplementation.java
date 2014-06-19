@@ -41,6 +41,7 @@ import org.atteo.moonshine.services.internal.DuplicateDetectionWrapper;
 import org.atteo.moonshine.services.internal.ReflectionTools;
 import org.atteo.moonshine.services.internal.ServiceModuleRewriter;
 import org.atteo.moonshine.services.internal.ServiceWrapper;
+import org.atteo.urlhandlers.UrlHandlers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +69,7 @@ class ServicesImplementation implements Services, Services.Builder {
 	private List<ServiceWrapper> services;
 
 	public ServicesImplementation() {
+        UrlHandlers.registerAnnotatedHandlers();
 	}
 
 	@Override
