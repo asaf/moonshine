@@ -6,7 +6,6 @@ import com.google.inject.Provider;
 import com.google.inject.persist.PersistService;
 import com.google.inject.servlet.RequestScoped;
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
-import com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import org.atteo.config.XmlDefaultValue;
 import org.atteo.moonshine.TopLevelService;
@@ -36,10 +35,10 @@ public class OrientDb extends TopLevelService {
 
     private PersistService persistService;
 
-    private Provider<ODatabaseDocumentTx> provider = new Provider<ODatabaseDocumentTx>() {
+    private Provider<DbProvider> provider = new Provider<DbProvider>() {
         @Override
-        public ODatabaseDocumentTx get() {
-            return ODatabaseDocumentPool.global().acquire(url, username, password);
+        public DbProvider get() {
+            return new DbProvider(url, username, password);
         }
     };
 
@@ -65,7 +64,7 @@ public class OrientDb extends TopLevelService {
             @Override
             protected void configure() {
                 OGlobalConfiguration.CLIENT_CONNECT_POOL_WAIT_TIMEOUT.setValue(poolTimeout);
-                bind(ODatabaseDocumentTx.class).toProvider(provider).in(RequestScoped.class);
+                bind(DbProvider.class).toProvider(provider).in(RequestScoped.class);
             }
         };
     }
