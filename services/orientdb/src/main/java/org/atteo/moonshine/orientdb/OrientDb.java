@@ -1,11 +1,14 @@
 package org.atteo.moonshine.orientdb;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.Provider;
 import com.google.inject.persist.PersistService;
 import com.google.inject.servlet.RequestScoped;
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import org.atteo.config.XmlDefaultValue;
 import org.atteo.moonshine.TopLevelService;
@@ -34,6 +37,9 @@ public class OrientDb extends TopLevelService {
     private Integer poolTimeout;
 
     private PersistService persistService;
+
+    @Inject
+    Injector injector;
 
     private Provider<DbProvider> provider = new Provider<DbProvider>() {
         @Override
@@ -73,6 +79,7 @@ public class OrientDb extends TopLevelService {
     public void start() {
         if (getAutocreate()) {
             ODatabaseDocumentTx db = new ODatabaseDocumentTx(url);
+            db.release();
             if (!db.exists()) {
                 db.create();
             }
@@ -82,5 +89,16 @@ public class OrientDb extends TopLevelService {
 
     @Override
     public void stop() {
+        ODatabaseDocumentTx db = new ODatabaseDocumentTx(url);
+        if (db.exists()) {
+            if (url.startsWith("memory:")) {
+                ODatabaseDocumentTx dbInstance = ODatabaseDocumentPool.global().acquire(url, username, password);
+                dbInstance.drop();
+                dbInstance.release();
+                dbInstance.close();
+                ODatabaseDocumentPool.global().close();
+            }
+        }
+        db.close();
     }
 }
